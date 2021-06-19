@@ -1,0 +1,40 @@
+// Schema for Network backend of data visualization
+
+namespace dvis.pkt;
+
+
+table XY_Series
+{
+	m_x:[double];
+	m_y:[double];
+	m_name:string;
+}
+
+// Representation of an x-y plot:
+table XY_Plot
+{
+	m_x_label:string;
+	m_y_label:string;
+	m_series:[XY_Series];
+}
+
+
+table HeatMap
+{
+	m_x_label:string;
+	m_y_label:string;
+	m_scale_name:string;
+}
+
+table Figure
+{
+	m_title:string;
+	m_xy_plot:XY_Plot;				// Populated if it's an xy plot
+	m_heat_map:HeatMap;				// Populated if it's a heat map
+}
+
+// Top level packet that will be transferred along the wire:
+table NetPacket
+{
+	m_figure:Figure;				// For now one complete Figure per packet, keep it simple
+}

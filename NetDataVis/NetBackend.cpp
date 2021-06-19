@@ -4,33 +4,33 @@
 
 using boost::asio::ip::tcp;
 
-dvis::cNetBackend::cNetBackend(uint16_t uPortNum) :
-	m_Acceptor(m_IO_Context, tcp::endpoint(tcp::v4(), uPortNum))
-	//m_Socket(m_IO_Context)
+dvis::NetBackend::NetBackend(uint16_t uPortNum) :
+	m_acceptor(m_IO_context, tcp::endpoint(tcp::v4(), uPortNum))
+	//m_Socket(m_IO_context)
 {
 	// Waiting for connection... .
 	DoAccept();
-	m_Thread = std::thread([this]() {m_IO_Context.run(); });
+	m_IO_thread = std::thread([this]() {m_IO_context.run(); });
 }
 
-void dvis::cNetBackend::RenderFigure(cFigure* pFig)
+void dvis::NetBackend::RenderFigure(Figure* pFig)
 {
 }
 
-void dvis::cNetBackend::RenderXY_Plot(cXY_Plot* pXY_Plot)
+void dvis::NetBackend::RenderXY_Plot(XY_Plot* pXY_Plot)
 {
 }
 
-void dvis::cNetBackend::DoAccept()
+void dvis::NetBackend::DoAccept()
 {
-	m_Acceptor.async_accept(
+	m_acceptor.async_accept(
 		[this](boost::system::error_code ec, tcp::socket Socket)
 		{
 			if (!ec)
 			{
 				std::lock_guard<std::mutex> lock(m_mx);
 				std::cout << "Accepted connection!" << std::endl;
-				m_pSocket = std::make_shared<tcp::socket>(std::move(Socket));
+				m_socket = std::make_shared<tcp::socket>(std::move(Socket));
 			}
 			// Failed, try another connection
 			DoAccept();
