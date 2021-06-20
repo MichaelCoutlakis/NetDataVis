@@ -29,6 +29,7 @@ table HeatMap
 table Figure
 {
 	m_title:string;
+	m_ID:int;
 	m_xy_plot:XY_Plot;				// Populated if it's an xy plot
 	m_heat_map:HeatMap;				// Populated if it's a heat map
 }

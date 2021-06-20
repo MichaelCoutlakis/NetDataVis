@@ -8,6 +8,7 @@
 
 #include <thread>
 #include <iostream>
+#include <functional>
 
 #include <boost/asio/io_context.hpp>
 #include <boost/asio.hpp>
@@ -20,15 +21,21 @@ namespace dvis
 class NetBackendClient
 {
 public:
-	NetBackendClient(std::string IP, unsigned port) :
+	NetBackendClient
+	(
+		std::string IP,
+		unsigned port,
+		std::function<void(const dvis::pkt::NetPacketT& packet)> packet_callback
+	) :
 		m_resolver(m_IO_context),
 		m_socket(m_IO_context),
+		m_packet_callback(packet_callback),
 		m_buf(4096)
 	{
 		auto endpoints = m_resolver.resolve(IP, std::to_string(port));
 		DoConnect(endpoints);
 
-		m_thread = std::thread([this]() {m_IO_context.run(); });
+		m_thread = std::thread([this]() {m_IO_context.run();});
 	}
 	~NetBackendClient()
 	{
@@ -45,6 +52,7 @@ private:
 
 	std::string m_strRead{ ' ', 100 };
 
+	std::function<void(const dvis::pkt::NetPacketT& packet)> m_packet_callback;
 	std::vector<uint8_t> m_buf;
 
 	void DoConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints)
@@ -115,6 +123,8 @@ private:
 						else
 							std::cout << "No figure recieved" << std::endl;
 
+						if (m_packet_callback)
+							m_packet_callback(packet);
 						// Read the next packet size
 						DoReadPacketSize();
 					}
