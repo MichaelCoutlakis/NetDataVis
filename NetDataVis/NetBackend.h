@@ -5,7 +5,7 @@
 *******************************************************************************/
 #pragma once
 
-#include "../../CppDataVisLib/CppDataVisLib/Backend.h"
+#include "CppDataVisLib/Backend.h"
 
 #include "Schemas/NetBackendSchema_generated.h"
 #include "FlatbufferUtils.h"
@@ -28,8 +28,10 @@ public:
 		if (m_IO_thread.joinable())
 			m_IO_thread.join();
 	}
-	void RenderFigure(Figure* fig) override;
-	void RenderXY_Plot(Figure* fig, XY_Plot* xy_plot) override;
+
+
+	void Visit(Figure* figure) override { RenderFigure(figure); };
+	void Visit(XY_Plot* plot) override { RenderXY_Plot(plot); };
 
 
 	void SayHi()
@@ -116,5 +118,10 @@ private:
 	mutable std::mutex m_mx;
 	std::thread m_IO_thread;
 	//boost::asio
+
+	pkt::NetPacketT m_packet;
+
+	void RenderFigure(Figure* fig);
+	void RenderXY_Plot(XY_Plot* xy_plot);
 };
 }

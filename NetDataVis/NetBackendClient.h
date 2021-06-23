@@ -25,7 +25,7 @@ public:
 	(
 		std::string IP,
 		unsigned port,
-		std::function<void(const dvis::pkt::NetPacketT& packet)> packet_callback
+		std::function<void(std::shared_ptr<dvis::pkt::NetPacketT> packet)> packet_callback
 	) :
 		m_resolver(m_IO_context),
 		m_socket(m_IO_context),
@@ -52,7 +52,7 @@ private:
 
 	std::string m_strRead{ ' ', 100 };
 
-	std::function<void(const dvis::pkt::NetPacketT& packet)> m_packet_callback;
+	std::function<void(std::shared_ptr<dvis::pkt::NetPacketT> packet)> m_packet_callback;
 	std::vector<uint8_t> m_buf;
 
 	void DoConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints)
@@ -116,10 +116,10 @@ private:
 					{
 						std::cout << "Got " << n_rx_bytes << " bytes !!" << std::endl;
 						// Deserialize the buffer:
-						pkt::NetPacketT packet;
-						flatbuffers::GetSizePrefixedRoot<pkt::NetPacket>(m_buf.data())->UnPackTo(&packet);
-						if (packet.m_figure)
-							std::cout << "The figure title is " << packet.m_figure->m_title << std::endl;
+						auto packet = std::make_shared<pkt::NetPacketT>();;
+						flatbuffers::GetSizePrefixedRoot<pkt::NetPacket>(m_buf.data())->UnPackTo(packet.get());
+						if (packet->m_figure)
+							std::cout << "The figure title is " << packet->m_figure->m_title << std::endl;
 						else
 							std::cout << "No figure recieved" << std::endl;
 

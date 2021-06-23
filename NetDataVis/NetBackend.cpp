@@ -1,3 +1,9 @@
+/***************************************************************************//**
+ * \brief		Implementation of a network backend (renders the data
+ *				visualization over the network)
+ * \copyright	Michael Coutlakis (2021)
+ * \license		MIT License, see the LICENSE file.
+ *******************************************************************************/
 #include <iostream>
 
 #include "NetBackend.h"
@@ -17,48 +23,47 @@ dvis::NetBackend::NetBackend(uint16_t uPortNum) :
 
 void dvis::NetBackend::RenderFigure(Figure* fig)
 {
-	std::lock_guard<std::mutex> lock(m_mx);
-	if(IsConnected())
-	{
-		try
-		{
-			pkt::NetPacketT packet;
-			packet.m_figure = std::make_unique<pkt::FigureT>();
-			packet.m_figure->m_title = fig->Title();
-			packet.m_figure->m_ID = fig->ID();
+	m_packet.m_figure = std::make_unique<pkt::FigureT>();
+	m_packet.m_figure->m_title = fig->Title();
+	m_packet.m_figure->m_ID = fig->ID();
 
-			flatbuffers::FlatBufferBuilder builder = ToBuffer(packet);
-			std::cout << "Made flatbuffer with size " << builder.GetSize() << std::endl;
+	//std::lock_guard<std::mutex> lock(m_mx);
+	//if(IsConnected())
+	//{
+	//	try
+	//	{
+	//		pkt::NetPacketT packet;
+	//		packet.m_figure = std::make_unique<pkt::FigureT>();
+	//		packet.m_figure->m_title = fig->Title();
+	//		packet.m_figure->m_ID = fig->ID();
 
-			size_t num_bytes_written = boost::asio::write
-			(
-				*m_socket.get(),
-				boost::asio::const_buffer(builder.GetBufferPointer(), builder.GetSize())
-			);
-			std::cout << "Wrote " << num_bytes_written << " bytes " << std::endl;
-		}
-		catch(...)
-		{
-			m_socket->close();
-		}
-	}
-	else
-		std::cout << "Socket not connected" << std::endl;
+	//		flatbuffers::FlatBufferBuilder builder = ToBuffer(packet);
+	//		std::cout << "Made flatbuffer with size " << builder.GetSize() << std::endl;
+
+	//		size_t num_bytes_written = boost::asio::write
+	//		(
+	//			*m_socket.get(),
+	//			boost::asio::const_buffer(builder.GetBufferPointer(), builder.GetSize())
+	//		);
+	//		std::cout << "Wrote " << num_bytes_written << " bytes " << std::endl;
+	//	}
+	//	catch(...)
+	//	{
+	//		m_socket->close();
+	//	}
+	//}
+	//else
+	//	std::cout << "Socket not connected" << std::endl;
 }
 
-void dvis::NetBackend::RenderXY_Plot(Figure* fig, XY_Plot* xy_plot)
+void dvis::NetBackend::RenderXY_Plot(XY_Plot* xy_plot)
 {
 	std::lock_guard<std::mutex> lock(m_mx);
 	if(IsConnected())
 	{
 		try
 		{
-			pkt::NetPacketT packet;
-			packet.m_figure = std::make_unique<pkt::FigureT>();
-			packet.m_figure->m_title = fig->Title();
-			packet.m_figure->m_ID = fig->ID();
-
-			auto& plot = packet.m_figure->m_xy_plot;
+			auto& plot = m_packet.m_figure->m_xy_plot;
 			plot = std::make_unique<pkt::XY_PlotT>();
 
 			if(xy_plot->m_x_axis_bottom)
@@ -71,7 +76,7 @@ void dvis::NetBackend::RenderXY_Plot(Figure* fig, XY_Plot* xy_plot)
 			series0->m_x = xy_plot->m_x;
 			series0->m_y = xy_plot->m_y;
 
-			flatbuffers::FlatBufferBuilder builder = ToBuffer(packet);
+			flatbuffers::FlatBufferBuilder builder = ToBuffer(m_packet);
 			std::cout << "Made flatbuffer with size " << builder.GetSize() << std::endl;
 
 			size_t num_bytes_written = boost::asio::write

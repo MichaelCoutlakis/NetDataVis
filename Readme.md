@@ -14,21 +14,21 @@ Network backend for the C++ data visualization library
 
 ```c++
 	using namespace dvis;
-	// Initialize a backend which renders the plot to a client on the network
-	auto pBackend = std::make_shared<cNetBackend>(8080);
-	auto pFig = std::make_shared<cFigure>(pBackend);
-	pFig->SetTitle("My New Figure");
 
-	auto pXY_Plot = std::make_shared<cXY_Plot>
+	auto xy_plot = std::make_shared<XY_Plot>
 	(
 		std::vector<double>{ 1.0, 2.0, 3.0 },
 		std::vector<double>{ 42.0, 33.0, 43.0 }
 	);
-	pXY_Plot->SetX_Label("Time [seconds]");
-	pXY_Plot->SetY_Label("Voltage [Volts]");
+	xy_plot->SetX_Label("Time [seconds]");
+	xy_plot->SetY_Label("Voltage [Volts]");
 
-	pFig->SetPlot(pXY_Plot);
-	pFig->Render();
+	auto fig = std::make_shared<Figure>("My Figure Title");
+	fig->SetPlot(xy_plot);
+	
+	// Initialize a backend which renders the plot to a client over the network:
+	auto backend = std::make_shared<NetBackend>(8080);
+	backend->Render(fig);
 ```
 
 
